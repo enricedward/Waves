@@ -44,6 +44,12 @@ class OrdersFromScriptedAccTestSuite
     nodes.waitForHeightAriseAndTxPresent(aliceAsset)
     val aliceWavesPair = AssetPair(ByteStr.decodeBase58(aliceAsset).toOption, None)
 
+    assertBadRequestAndResponse(
+      matcherNode
+        .placeOrder(bobNode, aliceWavesPair, OrderType.BUY, 2.waves * Order.PriceConstant, 500, version = 1, 10.minutes),
+      "Trading on scripted account isn't allowed yet."
+    )
+
     // check assets's balances
     aliceNode.assertAssetBalance(aliceNode.address, aliceAsset, someAssetAmount)
     aliceNode.assertAssetBalance(matcherNode.address, aliceAsset, 0)
@@ -85,14 +91,6 @@ class OrdersFromScriptedAccTestSuite
 
       // sell order should be in the aliceNode orderbook
       matcherNode.fullOrderHistory(aliceNode).head.status shouldBe "Accepted"
-    }
-
-    "scripted account cannot trade until SmartAccountTrading is activated" in {
-      assertBadRequestAndResponse(
-        matcherNode
-          .placeOrder(bobNode, aliceWavesPair, OrderType.BUY, 2.waves * Order.PriceConstant, 500, version = 1, 10.minutes),
-        "Trading on scripted account isn't allowed yet."
-      )
     }
 
     "scripted account can trade once SmartAccountTrading is activated" in {
